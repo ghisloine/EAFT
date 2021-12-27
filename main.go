@@ -5,6 +5,7 @@ import (
 	"ga_tuner/scripts"
 	"ga_tuner/utils"
 	"os"
+
 	"github.com/MaxHalford/eaopt"
 )
 
