@@ -1,7 +1,16 @@
 package scripts
 
 import (
+	"fmt"
+	"ga_tuner/utils"
+	"log"
 	"math/rand"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 func MutNormalFloat64(genome []float64, rate float64, rng *rand.Rand) {
@@ -28,7 +37,28 @@ func InitBinaryFloat64(n uint, lower, upper float64, rng *rand.Rand) (floats []f
 	return
 }
 
-func ExecuteCode(cmd string) {
-	//output := exec.Command(cmd)
-	// TODO : Bu kisim'a geri kalan kodun execute edilmesi ile ilgili seyler yazilacak.
+func CompileCode(cmd string, id uuid.UUID) float64 {
+	// COMPILE
+	command := strings.Split(cmd, " ")
+	app := "gcc"
+	out, err := exec.Command(app, command...).Output()
+	if err != nil {
+		log.Print(string(out))
+		log.Fatal(err)
+	}
+
+	// EXECUTION
+	start := time.Now()
+	app = "cmd"
+	exec_file := filepath.Join(utils.ResultsPath, id.String())
+	out, err = exec.Command(exec_file).Output()
+	if err != nil {
+		log.Print(string(out))
+		log.Fatal(err)
+	}
+	finished := time.Now()
+	elapsed := finished.Sub(start)
+	fmt.Printf("Total Elapsed Time is : %d\n", elapsed)
+
+	return float64(elapsed)
 }

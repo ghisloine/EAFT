@@ -28,20 +28,20 @@ var availableFlags []string = tools.Flags
 
 func MatchBinaryWithFlags(X SingleBench) string {
 	// First collect all available Flags
-	cmd := "gcc"
+	cmd := ""
 	// Replace with -f or -fno according to X
 	for idx := range X.binary_vec {
 		if X.binary_vec[idx] == 0 {
-			cmd += " -fno-" + availableFlags[idx]
+			cmd += "-fno-" + availableFlags[idx] + " "
 		} else {
-			cmd += " -f" + availableFlags[idx]
+			cmd += "-f" + availableFlags[idx] + " "
 		}
 	}
 	return cmd
 }
 
-func addPolybenchDependencies(command string, problem string) string {
-	command += " " + path.Join(utils.Files, problem) + ".c" + " -I" + utils.Utilities + " --include " + "polybench.c"
+func addPolybenchDependencies(command string, problem string, out_file string) string {
+	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, out_file)
 	return command
 }
 
@@ -51,9 +51,9 @@ func (X SingleBench) Evaluate() (float64, error) {
 	cmd := MatchBinaryWithFlags(X)
 
 	// Adding some polybench information to run cmd
-	cmd = addPolybenchDependencies(cmd, os.Args[1])
+	cmd = addPolybenchDependencies(cmd, os.Args[1], X.uuid.String())
 
-	total := ExecuteCode(cmd)
+	total := CompileCode(cmd, X.uuid)
 
 	return total, nil
 }
