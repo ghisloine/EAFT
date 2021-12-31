@@ -8,10 +8,9 @@ import (
 	"strings"
 )
 
-var Flags []string = ReturnAllFlags()
+var Flags []string = ReturnAllFlags(os.Args[2])
 
-func ReturnAllFlags() []string {
-	app := os.Args[2]
+func ReturnAllFlags(app string) []string {
 	arg1 := "--help=optimizers"
 	cmd := exec.Command(app, arg1)
 	stdout, err := cmd.Output()
