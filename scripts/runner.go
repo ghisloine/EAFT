@@ -15,23 +15,24 @@ import (
 type Vector []float64
 
 type SingleBench struct {
-	uuid       uuid.UUID
-	cmd        string
-	problem    string
-	runtime    int
-	binPath    string
-	execPath   string
-	binary_vec Vector
+	uuid      uuid.UUID
+	cmd       string
+	problem   string
+	runtime   int
+	binPath   string
+	execPath  string
+	opt_level string
+	BinVec    Vector
 }
 
 var availableFlags []string = tools.Flags
 
 func MatchBinaryWithFlags(X SingleBench) string {
 	// First collect all available Flags
-	cmd := ""
+	cmd := "-O" + X.opt_level + " "
 	// Replace with -f or -fno according to X
-	for idx := range X.binary_vec {
-		if X.binary_vec[idx] == 0 {
+	for idx := range X.BinVec {
+		if X.BinVec[idx] == 0 {
 			cmd += "-fno-" + availableFlags[idx] + " "
 		} else {
 			cmd += "-f" + availableFlags[idx] + " "
@@ -41,7 +42,7 @@ func MatchBinaryWithFlags(X SingleBench) string {
 }
 
 func addPolybenchDependencies(command string, problem string, out_file string) string {
-	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, out_file)
+	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, os.Args[1], out_file)
 	return command
 }
 
@@ -54,7 +55,6 @@ func (X SingleBench) Evaluate() (float64, error) {
 	cmd = addPolybenchDependencies(cmd, os.Args[1], X.uuid.String())
 
 	total := CompileCode(cmd, X.uuid)
-
 	return total, nil
 }
 
@@ -62,13 +62,13 @@ func (X SingleBench) Evaluate() (float64, error) {
 // probability 0.8.
 
 func (X SingleBench) Mutate(rng *rand.Rand) {
-	MutNormalFloat64(X.binary_vec, 0.8, rng)
+	MutNormalFloat64(X.BinVec, 0.8, rng)
 }
 
 // Crossover a Vector with another Vector by applying uniform crossover.
 // TODO : Paper'da olup burada olmayan crossover metodlari neler var ona bak.
 func (X SingleBench) Crossover(Y eaopt.Genome, rng *rand.Rand) {
-	eaopt.CrossGNXFloat64(X.binary_vec, Y.(SingleBench).binary_vec, 2, rng)
+	eaopt.CrossGNXFloat64(X.BinVec, Y.(SingleBench).BinVec, 2, rng)
 }
 
 // Clone a Vector to produce a new one that points to a different slice.
@@ -81,12 +81,13 @@ func (X SingleBench) Clone() eaopt.Genome {
 // distributed between -10 and 10.
 func VectorFactory(rng *rand.Rand) eaopt.Genome {
 	return SingleBench{
-		uuid:       uuid.NewV4(),
-		cmd:        "",
-		problem:    os.Args[1],
-		runtime:    0,
-		binPath:    "",
-		execPath:   "",
-		binary_vec: InitBinaryFloat64(5, 0, 2, rng),
+		uuid:      uuid.NewV4(),
+		cmd:       "",
+		problem:   os.Args[1],
+		runtime:   0,
+		binPath:   "",
+		execPath:  "",
+		opt_level: "2",
+		BinVec:    InitBinaryFloat64(5, 0, 2, rng),
 	}
 }
