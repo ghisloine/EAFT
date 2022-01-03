@@ -5,6 +5,7 @@ import (
 	"ga_tuner/utils"
 	"log"
 	"math/rand"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -40,7 +41,7 @@ func InitBinaryFloat64(n uint, lower, upper float64, rng *rand.Rand) (floats []f
 func CompileCode(cmd string, id uuid.UUID) float64 {
 	// COMPILE
 	command := strings.Split(cmd, " ")
-	app := "gcc"
+	app := os.Args[2]
 	out, err := exec.Command(app, command...).Output()
 	if err != nil {
 		log.Print(string(out))
@@ -50,15 +51,14 @@ func CompileCode(cmd string, id uuid.UUID) float64 {
 	// EXECUTION
 	start := time.Now()
 	app = "cmd"
-	exec_file := filepath.Join(utils.ResultsPath, id.String())
+	exec_file := filepath.Join(utils.ResultsPath, os.Args[1], id.String())
 	out, err = exec.Command(exec_file).Output()
 	if err != nil {
 		log.Print(string(out))
 		log.Fatal(err)
 	}
-	finished := time.Now()
-	elapsed := finished.Sub(start)
-	fmt.Printf("Total Elapsed Time is : %d\n", elapsed)
+	elapsed := time.Since(start).Seconds()
+	fmt.Printf("Total Elapsed Time is : %f s\n", elapsed)
 
 	return float64(elapsed)
 }
