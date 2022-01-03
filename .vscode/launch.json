@@ -9,9 +9,9 @@
         "name": "Launch Main",
         "type": "go",
         "request": "launch",
-        "mode": "debug",
+        "mode": "auto",
         "program": "main.go",
-        "args": ["2mm", "gcc"]
+        "args": ["2mm", "gcc-11"]
     },
         {
             "name": "Launch Package",
