@@ -27,12 +27,10 @@ func MutNormalFloat64(genome []float64, rate float64, rng *rand.Rand) {
 }
 
 // Returns a Binary Vector with just only 0 - 1.
-func InitBinaryFloat64(n uint, lower, upper float64, rng *rand.Rand) (FlagMap map[string]float64, floats []float64) {
+func InitBinaryFloat64(n uint, lower, upper float64, rng *rand.Rand) (floats []float64) {
 	floats = make([]float64, n)
-	FlagMap = make(map[string]float64)
 	for i := range floats {
 		floats[i] = lower + float64(rng.Intn(int(upper)))
-		FlagMap[availableFlags[i]] = floats[i]
 	}
 	return
 }

@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 
 	"github.com/MaxHalford/eaopt"
 	uuid "github.com/satori/go.uuid"
@@ -18,34 +17,24 @@ import (
 // A Vector of SingleBench.
 type Vector []float64
 
-type SingleBench struct {
-	Id        string
-	cmd       string
-	problem   string
-	runtime   int
-	binPath   string
-	execPath  string
-	opt_level string
-	Flagset   map[string]float64
-	BinVec    Vector
-}
-
 var availableFlags []string = tools.Flags
 
-func MatchBinaryWithFlags(X SingleBench) string {
+func MatchBinaryWithFlags(X Vector) (string, map[string]int) {
 	// First collect all available Flags
-	cmd := "-O" + X.opt_level + " "
+	cmd := "-O3" + " "
 	// Replace with -f or -fno according to X
-
-	for key, elem := range X.Flagset {
-		if elem == 0 {
-			cmd += "-fno-" + key + " "
-
+	flag_map := map[string]int{}
+	for i, v := range X {
+		if int(v) == 0 {
+			cmd += "-fno-" + availableFlags[i] + " "
+			flag_map[availableFlags[i]] = int(v)
 		} else {
-			cmd += "-f" + key + " "
+			cmd += "-f" + availableFlags[i] + " "
+			flag_map[availableFlags[i]] = int(v)
 		}
 	}
-	return cmd
+
+	return cmd, flag_map
 }
 
 func addPolybenchDependencies(command string, problem string, out_file string) string {
@@ -54,36 +43,40 @@ func addPolybenchDependencies(command string, problem string, out_file string) s
 }
 
 // Fitness function burasi
-func (X SingleBench) Evaluate() (float64, error) {
+func (X Vector) Evaluate() (float64, error) {
 	// Changing Binary Array to GCC command with corresponding open / close flag
-	cmd := MatchBinaryWithFlags(X)
+	output := uuid.NewV4().String()
+
+	cmd, flag_map := MatchBinaryWithFlags(X)
 
 	// Adding some polybench information to run cmd
-	cmd = addPolybenchDependencies(cmd, os.Args[1], X.Id)
+	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
 
 	// Total is Execution time of Code.
-	total := CompileCode(cmd, X.Id)
+	total := CompileCode(cmd, output)
 
-	WriteJsonFile(X, total)
+	WriteJsonFile(output, flag_map, total)
+
 	return total, nil
 }
 
 // Mutate a Vector by resampling each element from a normal distribution with
 // probability 0.8.
 
-func (X SingleBench) Mutate(rng *rand.Rand) {
-	MutNormalFloat64(X.BinVec, 0.8, rng)
+func (p Vector) Mutate(rng *rand.Rand) {
+	MutNormalFloat64(p, 0.8, rng)
 }
 
 // TODO : Paper'da olup burada olmayan crossover metodlari neler var ona bak.
 // Crossover a Vector with another Vector by applying uniform crossover.
-func (X SingleBench) Crossover(Y eaopt.Genome, rng *rand.Rand) {
-	eaopt.CrossGNXFloat64(X.BinVec, Y.(SingleBench).BinVec, 2, rng)
+func (X Vector) Crossover(Y eaopt.Genome, rng *rand.Rand) {
+	eaopt.CrossGNXFloat64(X, Y.(Vector), 2, rng)
 }
 
 // Clone a Vector to produce a new one that points to a different slice.
-func (X SingleBench) Clone() eaopt.Genome {
-	var Y SingleBench = X
+func (X Vector) Clone() eaopt.Genome {
+	var Y = make(Vector, len(X))
+	copy(Y, X)
 	return Y
 }
 
@@ -92,32 +85,19 @@ func (X SingleBench) Clone() eaopt.Genome {
 
 // TODO : BinVec could be changed with Key : Value pair. Key may be flag, Value may be 0-1.
 func VectorFactory(rng *rand.Rand) eaopt.Genome {
-	f, v := InitBinaryFloat64(5, 0, 2, rng)
-	opt := strconv.Itoa(2 + rng.Intn(int(2)))
-	return SingleBench{
-		Id:        uuid.NewV4().String(),
-		cmd:       "",
-		problem:   os.Args[1],
-		runtime:   0,
-		binPath:   "",
-		execPath:  "",
-		opt_level: opt,
-		Flagset:   f,
-		BinVec:    v,
-	}
+	return Vector(InitBinaryFloat64(6, 0, 2, rng))
+
 }
 
-func WriteJsonFile(X SingleBench, runtime float64) {
+func WriteJsonFile(id string, flag_map map[string]int, runtime float64) {
 	outJson := make(map[string]interface{})
 
-	outJson["id"] = X.Id
+	outJson["id"] = id
 	outJson["runtime"] = runtime
-	outJson["problem"] = X.problem
-	outJson["optlevel"] = X.opt_level
-	outJson["flagset"] = X.Flagset
-	outJson["binary_values"] = X.BinVec
+	outJson["problem"] = os.Args[1]
+	outJson["flagset"] = flag_map
 
 	jsonStr, _ := json.Marshal(outJson)
-	ioutil.WriteFile(filepath.Join(utils.ResultsPath, os.Args[1], "results", X.Id+".json"), jsonStr, os.ModePerm)
+	ioutil.WriteFile(filepath.Join(utils.ResultsPath, os.Args[1], "results", id+".json"), jsonStr, os.ModePerm)
 
 }
