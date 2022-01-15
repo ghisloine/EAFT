@@ -1,14 +1,11 @@
 package scripts
 
 import (
-	"encoding/json"
 	"ga_tuner/utils"
 	"ga_tuner/utils/tools"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
-	"path/filepath"
 
 	"github.com/MaxHalford/eaopt"
 	uuid "github.com/satori/go.uuid"
@@ -19,9 +16,10 @@ type Vector []float64
 
 var availableFlags []string = tools.Flags
 
-func MatchBinaryWithFlags(X Vector) (string, map[string]int) {
+// TODO : Change static optimization level with Dynamic one.
+func MatchBinaryWithFlags(X Vector, OptLevel string) (string, map[string]int) {
 	// First collect all available Flags
-	cmd := "-O3" + " "
+	cmd := "-" + OptLevel + " "
 	// Replace with -f or -fno according to X
 	flag_map := map[string]int{}
 	for i, v := range X {
@@ -46,16 +44,13 @@ func addPolybenchDependencies(command string, problem string, out_file string) s
 func (X Vector) Evaluate() (float64, error) {
 	// Changing Binary Array to GCC command with corresponding open / close flag
 	output := uuid.NewV4().String()
-
-	cmd, flag_map := MatchBinaryWithFlags(X)
+	cmd, _ := MatchBinaryWithFlags(X, "O3")
 
 	// Adding some polybench information to run cmd
 	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
 
 	// Total is Execution time of Code.
-	total := CompileCode(cmd, output)
-
-	WriteJsonFile(output, flag_map, total)
+	total := CompileCode(cmd, output, 3)
 
 	return total, nil
 }
@@ -85,19 +80,18 @@ func (X Vector) Clone() eaopt.Genome {
 
 // TODO : BinVec could be changed with Key : Value pair. Key may be flag, Value may be 0-1.
 func VectorFactory(rng *rand.Rand) eaopt.Genome {
-	return Vector(InitBinaryFloat64(6, 0, 2, rng))
+	// NUMBER_OF_FLAGS := uint(len(availableFlags))
+	return Vector(InitBinaryFloat64(50, 0, 2, rng))
 
 }
 
-func WriteJsonFile(id string, flag_map map[string]int, runtime float64) {
-	outJson := make(map[string]interface{})
+func CollectBaseline(Baseline string) float64 {
+	output := uuid.NewV4().String()
+	cmd, _ := MatchBinaryWithFlags(make([]float64, 0), Baseline)
+	// Adding some polybench information to run cmd
+	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
 
-	outJson["id"] = id
-	outJson["runtime"] = runtime
-	outJson["problem"] = os.Args[1]
-	outJson["flagset"] = flag_map
-
-	jsonStr, _ := json.Marshal(outJson)
-	ioutil.WriteFile(filepath.Join(utils.ResultsPath, os.Args[1], "results", id+".json"), jsonStr, os.ModePerm)
-
+	// Total is Execution time of Code.
+	total := CompileCode(cmd, output, 3)
+	return total
 }

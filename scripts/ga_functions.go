@@ -1,6 +1,7 @@
 package scripts
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -24,13 +25,31 @@ func GARunner() {
 		return
 	}
 
-	f := WriteJson(ga)
-	ga.NGenerations = 10
-	ga.ParallelEval = false
+	f, _ := os.Create(os.Args[3])
+	defer f.Close()
+	w := bufio.NewWriter(f)
+	fmt.Fprint(w, "")
+	w.Flush()
+
+	f, _ = os.OpenFile(os.Args[3], os.O_APPEND|os.O_WRONLY, 0666)
+	defer f.Close()
+
+	var bytes, _ = json.Marshal(ga)
+	f.WriteString(string(bytes) + "\n")
+
+	level_two := CollectBaseline("O2")
+	level_three := CollectBaseline("O3")
+
+	fmt.Printf("O2 BASELINE IS : %f\n", level_two)
+	fmt.Printf("O3 BASELINE IS : %f\n", level_three)
+
+	ga.NGenerations = 2
+	ga.ParallelEval = true
 	// Add a custom print function to track progress
 	ga.Callback = func(ga *eaopt.GA) {
 		fmt.Printf("Best fitness at generation %d: ID:  %s, Fitness : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness)
-		var bytes, _ = json.Marshal(ga)
+		var bytes, err = json.Marshal(ga)
+		fmt.Println(err)
 		f.WriteString(string(bytes) + "\n")
 	}
 
@@ -65,7 +84,7 @@ func InitBinaryFloat64(n uint, lower, upper float64, rng *rand.Rand) (floats []f
 	return
 }
 
-func CompileCode(cmd string, id string) (Total float64) {
+func CompileCode(cmd string, id string, count int) (Total float64) {
 	// COMPILE
 	command := strings.Split(cmd, " ")
 	app := os.Args[2]
@@ -77,19 +96,22 @@ func CompileCode(cmd string, id string) (Total float64) {
 	}
 
 	// EXECUTION
-	exec_file := filepath.Join(utils.ResultsPath, os.Args[1], "bin", id)
-	command_exec := exec.Command(exec_file)
-	var out_exec bytes.Buffer
-	// set the output to our variable
-	command_exec.Stdout = &out_exec
-	start := time.Now()
-	err = command_exec.Run()
-	if err != nil {
-		Total = math.Inf(10)
-		return Total
+	TotalExecTime := 0.0
+	for i := 0; i < count; i++ {
+		exec_file := filepath.Join(utils.ResultsPath, os.Args[1], "bin", id)
+		command_exec := exec.Command(exec_file)
+		var out_exec bytes.Buffer
+		// set the output to our variable
+		command_exec.Stdout = &out_exec
+		start := time.Now()
+		err = command_exec.Run()
+		TotalExecTime += time.Since(start).Seconds()
+		if err != nil {
+			Total = math.Inf(10)
+			return Total
+		}
 	}
-
-	Total = time.Since(start).Seconds()
-	//fmt.Printf("This one takes %f seconds\n", Total)
+	// CALC AVERAGE OF TOTAL RUN TIME
+	Total = TotalExecTime / float64(count)
 	return
 }
