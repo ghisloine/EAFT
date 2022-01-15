@@ -9,6 +9,7 @@ import (
 )
 
 // TODO : Add UnitTest for this function
+// TODO : Add New Folder between bin and problem : 2mm - 19/02/1992-18:04 - bin log results
 func Initialization(folderName string) {
 	newPath := filepath.Join(ResultsPath, folderName)
 	if _, err := os.Stat(newPath); errors.Is(err, os.ErrNotExist) {
