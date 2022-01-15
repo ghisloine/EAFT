@@ -2,15 +2,45 @@ package scripts
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"ga_tuner/utils"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/MaxHalford/eaopt"
 )
+
+func GARunner() {
+	var ga, err = eaopt.NewDefaultGAConfig().NewGA()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	f := WriteJson(ga)
+	ga.NGenerations = 10
+	ga.ParallelEval = false
+	// Add a custom print function to track progress
+	ga.Callback = func(ga *eaopt.GA) {
+		fmt.Printf("Best fitness at generation %d: ID:  %s, Fitness : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness)
+		var bytes, _ = json.Marshal(ga)
+		f.WriteString(string(bytes) + "\n")
+	}
+
+	// Find the minimum
+	err = ga.Minimize(VectorFactory)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
 
 func MutNormalFloat64(genome []float64, rate float64, rng *rand.Rand) {
 	for i := range genome {
@@ -42,12 +72,12 @@ func CompileCode(cmd string, id string) (Total float64) {
 	out_compile, err := exec.Command(app, command...).Output()
 	if err != nil {
 		log.Print(string(out_compile))
-		log.Fatal(err)
+		Total = math.Inf(10)
+		return Total
 	}
 
 	// EXECUTION
 	exec_file := filepath.Join(utils.ResultsPath, os.Args[1], "bin", id)
-
 	command_exec := exec.Command(exec_file)
 	var out_exec bytes.Buffer
 	// set the output to our variable
@@ -55,9 +85,11 @@ func CompileCode(cmd string, id string) (Total float64) {
 	start := time.Now()
 	err = command_exec.Run()
 	if err != nil {
-		log.Println(err)
+		Total = math.Inf(10)
+		return Total
 	}
 
 	Total = time.Since(start).Seconds()
+	//fmt.Printf("This one takes %f seconds\n", Total)
 	return
 }
