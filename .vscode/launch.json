@@ -6,12 +6,20 @@
     "configurations": [
 
     {
-        "name": "Launch Main",
+        "name": "Launch GA",
         "type": "go",
         "request": "launch",
         "mode": "auto",
         "program": "main.go",
-        "args": ["2mm", "gcc-11"]
+        "args": ["2mm", "gcc-11", "2mm.json", "GA"]
+    },
+    {
+        "name": "Launch PSO",
+        "type": "go",
+        "request": "launch",
+        "mode": "auto",
+        "program": "main.go",
+        "args": ["2mm", "gcc-11", "2mm_pso.json", "PSO"]
     },
         {
             "name": "Launch Package",
