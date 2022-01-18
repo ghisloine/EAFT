@@ -77,8 +77,6 @@ func (X Vector) Clone() eaopt.Genome {
 
 // VectorFactory returns a random vector by generating 2 values uniformally
 // distributed between -10 and 10.
-
-// TODO : BinVec could be changed with Key : Value pair. Key may be flag, Value may be 0-1.
 func VectorFactory(rng *rand.Rand) eaopt.Genome {
 	// NUMBER_OF_FLAGS := uint(len(availableFlags))
 	return Vector(InitBinaryFloat64(50, 0, 2, rng))
@@ -92,6 +90,6 @@ func CollectBaseline(Baseline string) float64 {
 	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
 
 	// Total is Execution time of Code.
-	total := CompileCode(cmd, output, 3)
+	total := CompileCode(cmd, output, 1)
 	return total
 }
