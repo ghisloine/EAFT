@@ -40,16 +40,27 @@ func GARunner() {
 	level_two := CollectBaseline("O2")
 	level_three := CollectBaseline("O3")
 
-	fmt.Printf("O2 BASELINE IS : %f\n", level_two)
-	fmt.Printf("O3 BASELINE IS : %f\n", level_three)
+	level_two_notification := fmt.Sprintf("O2 : %f", level_two)
+	level_three_notification := fmt.Sprintf("O3 : %f", level_three)
 
-	ga.NGenerations = 2
+	utils.Notifications = append(utils.Notifications, level_two_notification)
+	utils.Notifications = append(utils.Notifications, level_three_notification)
+
+	ga.NGenerations = 50
 	ga.ParallelEval = true
+	ga.PopSize = 40
 	// Add a custom print function to track progress
 	ga.Callback = func(ga *eaopt.GA) {
-		fmt.Printf("Best fitness at generation %d: ID:  %s, Fitness : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness)
+		utils.TextBox = fmt.Sprintf("Best fitness at generation %d: ID:  %s, Fitness : %f, Improvement : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness, 1-ga.HallOfFame[0].Fitness/level_two)
+		utils.Progress = (float64(ga.Generations+1) / float64(ga.NGenerations)) * float64(100)
+		utils.HallOfFame = ga.HallOfFame[0].Fitness
+		utils.BestOfPops = append(utils.BestOfPops, ga.HallOfFame[0].Fitness)
+		utils.Stats = []float64{math.Floor(ga.HallOfFame.FitMin()*100) / 100, math.Floor(ga.HallOfFame.FitMax()*100) / 100, math.Floor(ga.HallOfFame.FitAvg()*100) / 100}
 		var bytes, err = json.Marshal(ga)
-		fmt.Println(err)
+
+		if err != nil {
+			fmt.Println(err)
+		}
 		f.WriteString(string(bytes) + "\n")
 	}
 
@@ -113,5 +124,6 @@ func CompileCode(cmd string, id string, count int) (Total float64) {
 	}
 	// CALC AVERAGE OF TOTAL RUN TIME
 	Total = TotalExecTime / float64(count)
+	utils.TotalRunTimes = append(utils.TotalRunTimes, math.Floor(Total*100)/100)
 	return
 }
