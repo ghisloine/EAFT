@@ -19,7 +19,7 @@
         "request": "launch",
         "mode": "auto",
         "program": "main.go",
-        "args": ["2mm", "gcc-11", "2mm_pso.json", "PSO"]
+        "args": ["3mm", "gcc-11", "3mm_pso.json", "PSO"]
     },
         {
             "name": "Launch Package",
