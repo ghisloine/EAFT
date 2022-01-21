@@ -1,13 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"ga_tuner/scripts"
 	"ga_tuner/utils"
-	"log"
 	"os"
-
-	"github.com/MaxHalford/eaopt"
 )
 
 func init() {
@@ -16,28 +12,21 @@ func init() {
 
 func main() {
 
+	// TOOD : Change this side to dynamic. User should have different options for finding optimal
+	// Solution for their code. For Example : GA or Particle Swarm or Differential Evolution or OpenAI.
+	// Use TERMUI for making Terminal interface. Plotting results and other details will be in there.
 	// Instantiate a GA with a GAConfig
-	var ga, err = eaopt.NewDefaultGAConfig().NewGA()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+
+	// TODO : Set initial run time of given code. Compare it with best of population.
+	// Show improvement with percentage. Ex : Fitness Value : 3 sn. %34 less then normal.
 
 	// Set the number of generations to run for
-	ga.NGenerations = 10
-	ga.ParallelEval = true
-	// Add a custom print function to track progress
-	ga.Callback = func(ga *eaopt.GA) {
 
-		fmt.Printf("ID of Best Combination : %s\n", ga.HallOfFame[0].Genome.(scripts.SingleBench).Id)
-		fmt.Printf("Best fitness at generation %d: ID:  %s, Fitness : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness)
+	Runner := os.Args[4]
+	if Runner == "GA" {
+		go scripts.GARunner()
+	} else if Runner == "PSO" {
+		go scripts.PSORunner()
 	}
-	ga.Logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
-
-	// Find the minimum
-	err = ga.Minimize(scripts.VectorFactory)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	utils.CLI()
 }

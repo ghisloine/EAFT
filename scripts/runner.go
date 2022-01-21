@@ -1,15 +1,11 @@
 package scripts
 
 import (
-	"encoding/json"
 	"ga_tuner/utils"
 	"ga_tuner/utils/tools"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path"
-	"path/filepath"
-	"strconv"
 
 	"github.com/MaxHalford/eaopt"
 	uuid "github.com/satori/go.uuid"
@@ -18,34 +14,25 @@ import (
 // A Vector of SingleBench.
 type Vector []float64
 
-type SingleBench struct {
-	Id        string
-	cmd       string
-	problem   string
-	runtime   int
-	binPath   string
-	execPath  string
-	opt_level string
-	Flagset   map[string]float64
-	BinVec    Vector
-}
-
 var availableFlags []string = tools.Flags
 
-func MatchBinaryWithFlags(X SingleBench) string {
+// TODO : Change static optimization level with Dynamic one.
+func MatchBinaryWithFlags(X Vector, OptLevel string) (string, map[string]int) {
 	// First collect all available Flags
-	cmd := "-O" + X.opt_level + " "
+	cmd := "-" + OptLevel + " "
 	// Replace with -f or -fno according to X
-
-	for key, elem := range X.Flagset {
-		if elem == 0 {
-			cmd += "-fno-" + key + " "
-
+	flag_map := map[string]int{}
+	for i, v := range X {
+		if int(v) == 0 {
+			cmd += "-fno-" + availableFlags[i] + " "
+			flag_map[availableFlags[i]] = int(v)
 		} else {
-			cmd += "-f" + key + " "
+			cmd += "-f" + availableFlags[i] + " "
+			flag_map[availableFlags[i]] = int(v)
 		}
 	}
-	return cmd
+
+	return cmd, flag_map
 }
 
 func addPolybenchDependencies(command string, problem string, out_file string) string {
@@ -54,70 +41,55 @@ func addPolybenchDependencies(command string, problem string, out_file string) s
 }
 
 // Fitness function burasi
-func (X SingleBench) Evaluate() (float64, error) {
+func (X Vector) Evaluate() (float64, error) {
 	// Changing Binary Array to GCC command with corresponding open / close flag
-	cmd := MatchBinaryWithFlags(X)
+	output := uuid.NewV4().String()
+	cmd, _ := MatchBinaryWithFlags(X, "O3")
 
 	// Adding some polybench information to run cmd
-	cmd = addPolybenchDependencies(cmd, os.Args[1], X.Id)
+	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
 
 	// Total is Execution time of Code.
-	total := CompileCode(cmd, X.Id)
+	total := CompileCode(cmd, output, 3)
 
-	WriteJsonFile(X, total)
 	return total, nil
 }
 
 // Mutate a Vector by resampling each element from a normal distribution with
 // probability 0.8.
 
-func (X SingleBench) Mutate(rng *rand.Rand) {
-	MutNormalFloat64(X.BinVec, 0.8, rng)
+func (p Vector) Mutate(rng *rand.Rand) {
+	MutNormalFloat64(p, 0.8, rng)
 }
 
 // TODO : Paper'da olup burada olmayan crossover metodlari neler var ona bak.
 // Crossover a Vector with another Vector by applying uniform crossover.
-func (X SingleBench) Crossover(Y eaopt.Genome, rng *rand.Rand) {
-	eaopt.CrossGNXFloat64(X.BinVec, Y.(SingleBench).BinVec, 2, rng)
+func (X Vector) Crossover(Y eaopt.Genome, rng *rand.Rand) {
+	eaopt.CrossGNXFloat64(X, Y.(Vector), 2, rng)
 }
 
 // Clone a Vector to produce a new one that points to a different slice.
-func (X SingleBench) Clone() eaopt.Genome {
-	var Y SingleBench = X
+func (X Vector) Clone() eaopt.Genome {
+	var Y = make(Vector, len(X))
+	copy(Y, X)
 	return Y
 }
 
 // VectorFactory returns a random vector by generating 2 values uniformally
 // distributed between -10 and 10.
-
-// TODO : BinVec could be changed with Key : Value pair. Key may be flag, Value may be 0-1.
 func VectorFactory(rng *rand.Rand) eaopt.Genome {
-	f, v := InitBinaryFloat64(5, 0, 2, rng)
-	opt := strconv.Itoa(2 + rng.Intn(int(2)))
-	return SingleBench{
-		Id:        uuid.NewV4().String(),
-		cmd:       "",
-		problem:   os.Args[1],
-		runtime:   0,
-		binPath:   "",
-		execPath:  "",
-		opt_level: opt,
-		Flagset:   f,
-		BinVec:    v,
-	}
+	// NUMBER_OF_FLAGS := uint(len(availableFlags))
+	return Vector(InitBinaryFloat64(50, 0, 2, rng))
+
 }
 
-func WriteJsonFile(X SingleBench, runtime float64) {
-	outJson := make(map[string]interface{})
+func CollectBaseline(Baseline string) float64 {
+	output := uuid.NewV4().String()
+	cmd, _ := MatchBinaryWithFlags(make([]float64, 0), Baseline)
+	// Adding some polybench information to run cmd
+	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
 
-	outJson["id"] = X.Id
-	outJson["runtime"] = runtime
-	outJson["problem"] = X.problem
-	outJson["optlevel"] = X.opt_level
-	outJson["flagset"] = X.Flagset
-	outJson["binary_values"] = X.BinVec
-
-	jsonStr, _ := json.Marshal(outJson)
-	ioutil.WriteFile(filepath.Join(utils.ResultsPath, os.Args[1], "results", X.Id+".json"), jsonStr, os.ModePerm)
-
+	// Total is Execution time of Code.
+	total := CompileCode(cmd, output, 1)
+	return total
 }
