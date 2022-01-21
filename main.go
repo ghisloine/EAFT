@@ -24,9 +24,9 @@ func main() {
 
 	Runner := os.Args[4]
 	if Runner == "GA" {
-		scripts.GARunner()
+		go scripts.GARunner()
 	} else if Runner == "PSO" {
-		scripts.PSORunner()
+		go scripts.PSORunner()
 	}
-
+	utils.CLI()
 }
