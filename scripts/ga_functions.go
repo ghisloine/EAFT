@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
 	"github.com/MaxHalford/eaopt"
 )
 
@@ -24,14 +23,14 @@ func GARunner() {
 		fmt.Println(err)
 		return
 	}
-
-	f, _ := os.Create(os.Args[3])
+	JSON_FILE := filepath.Join(utils.ResultsPath, os.Args[1], "log", os.Args[3])
+	f, _ := os.Create(JSON_FILE)
 	defer f.Close()
 	w := bufio.NewWriter(f)
 	fmt.Fprint(w, "")
 	w.Flush()
 
-	f, _ = os.OpenFile(os.Args[3], os.O_APPEND|os.O_WRONLY, 0666)
+	f, _ = os.OpenFile(JSON_FILE, os.O_APPEND|os.O_WRONLY, 0666)
 	defer f.Close()
 
 	var bytes, _ = json.Marshal(ga)
