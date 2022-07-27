@@ -1,4 +1,4 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/ghisloine/ga_tuner/badge)](https://www.codefactor.io/repository/github/ghisloine/ga_tuner)
+[![CodeFactor](https://www.codefactor.io/repository/github/ghisloine/eaft/badge)](https://www.codefactor.io/repository/github/ghisloine/eaft)
 [![Maintainability](https://api.codeclimate.com/v1/badges/f872576a650c17be1544/maintainability)](https://codeclimate.com/github/ghisloine/ga_tuner/maintainability)
 # EAFT: Evolutionary Algoritms for GCC Flag Tuning
 
