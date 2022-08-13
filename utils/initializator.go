@@ -13,10 +13,16 @@ import (
 func Initialization(folderName string) {
 	newPath := filepath.Join(ResultsPath, folderName)
 	if _, err := os.Stat(newPath); errors.Is(err, os.ErrNotExist) {
-		err := os.MkdirAll(filepath.Join(newPath, "bin"), os.ModePerm)
-		err = os.MkdirAll(filepath.Join(newPath, "log"), os.ModePerm)
-		err = os.MkdirAll(filepath.Join(newPath, "results"), os.ModePerm)
-		if err != nil {
+		binErr := os.MkdirAll(filepath.Join(newPath, "bin"), os.ModePerm)
+		if binErr != nil {
+			log.Fatal(err)
+		}
+		logErr := os.MkdirAll(filepath.Join(newPath, "log"), os.ModePerm)
+		if logErr != nil {
+			log.Fatal(err)
+		}
+		resErr := os.MkdirAll(filepath.Join(newPath, "results"), os.ModePerm)
+		if resErr != nil {
 			log.Fatal(err)
 		}
 		log.Println("File Generation Successful")
@@ -27,9 +33,18 @@ func Initialization(folderName string) {
 		var answer = "1"
 		if answer == "1" {
 			os.RemoveAll(newPath)
-			err := os.MkdirAll(filepath.Join(newPath, "bin"), os.ModePerm)
-			err = os.MkdirAll(filepath.Join(newPath, "log"), os.ModePerm)
-			err = os.MkdirAll(filepath.Join(newPath, "results"), os.ModePerm)
+			binErr := os.MkdirAll(filepath.Join(newPath, "bin"), os.ModePerm)
+			if binErr != nil {
+				log.Fatal(err)
+			}
+			logErr := os.MkdirAll(filepath.Join(newPath, "log"), os.ModePerm)
+			if logErr != nil {
+				log.Fatal(err)
+			}
+			resErr := os.MkdirAll(filepath.Join(newPath, "results"), os.ModePerm)
+			if resErr != nil {
+				log.Fatal(err)
+			}
 			if err != nil {
 				log.Fatal(err)
 			}

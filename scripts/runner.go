@@ -4,20 +4,19 @@ import (
 	"ga_tuner/utils"
 	"ga_tuner/utils/tools"
 	"math/rand"
-	"os"
 	"path"
 
 	"github.com/MaxHalford/eaopt"
 	uuid "github.com/satori/go.uuid"
 )
 
-// A Vector of SingleBench.
+// A Vector of Float64.
 type Vector []float64
 
 var availableFlags []string = tools.Flags
 
 // TODO : Change static optimization level with Dynamic one.
-func MatchBinaryWithFlags(X Vector, OptLevel string) (string, map[string]int) {
+func MatchBinaryWithFlags(X Vector, OptLevel string, availableFlags []string) (string, map[string]int) {
 	// First collect all available Flags
 	cmd := "-" + OptLevel + " "
 	// Replace with -f or -fno according to X
@@ -36,7 +35,8 @@ func MatchBinaryWithFlags(X Vector, OptLevel string) (string, map[string]int) {
 }
 
 func addPolybenchDependencies(command string, problem string, out_file string) string {
-	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, os.Args[1], "bin", out_file)
+	ProblemName = problem
+	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, ProblemName, "bin", out_file)
 	return command
 }
 
@@ -44,10 +44,10 @@ func addPolybenchDependencies(command string, problem string, out_file string) s
 func (X Vector) Evaluate() (float64, error) {
 	// Changing Binary Array to GCC command with corresponding open / close flag
 	output := uuid.NewV4().String()
-	cmd, _ := MatchBinaryWithFlags(X, "O3")
+	cmd, _ := MatchBinaryWithFlags(X, "O3", availableFlags)
 
 	// Adding some polybench information to run cmd
-	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
+	cmd = addPolybenchDependencies(cmd, ProblemName, output)
 
 	// Total is Execution time of Code.
 	total := CompileCode(cmd, output, 3)
@@ -85,9 +85,9 @@ func VectorFactory(rng *rand.Rand) eaopt.Genome {
 
 func CollectBaseline(Baseline string) float64 {
 	output := uuid.NewV4().String()
-	cmd, _ := MatchBinaryWithFlags(make([]float64, 0), Baseline)
+	cmd, _ := MatchBinaryWithFlags(make([]float64, 0), Baseline, []string{})
 	// Adding some polybench information to run cmd
-	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
+	cmd = addPolybenchDependencies(cmd, ProblemName, output)
 
 	// Total is Execution time of Code.
 	total := CompileCode(cmd, output, 1)

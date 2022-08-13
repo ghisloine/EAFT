@@ -62,15 +62,15 @@ func CLI() {
 	g.BorderStyle.Fg = ui.ColorWhite
 	g.TitleStyle.Fg = ui.ColorWhite
 
-	sl := widgets.NewSparkline()
-	sl.Title = "srv 0:"
-	sl.Data = make([]float64, 0)
-	sl.LineColor = ui.ColorCyan
-	sl.TitleStyle.Fg = ui.ColorWhite
+	// sl := widgets.NewSparkline()
+	// sl.Title = "srv 0:"
+	// sl.Data = make([]float64, 0)
+	// sl.LineColor = ui.ColorCyan
+	// sl.TitleStyle.Fg = ui.ColorWhite
 
-	slg := widgets.NewSparklineGroup(sl)
-	slg.Title = "Sparkline"
-	slg.SetRect(25, 5, 50, 12)
+	// slg := widgets.NewSparklineGroup(sl)
+	// slg.Title = "Fitness Distribution"
+	// slg.SetRect(25, 5, 50, 12)
 
 	lc := widgets.NewPlot()
 	lc.Title = "Hall of Fame"
@@ -83,8 +83,8 @@ func CLI() {
 	lc.Marker = widgets.MarkerDot
 
 	bc := widgets.NewBarChart()
-	bc.Title = "Bar Chart"
-	bc.SetRect(50, 0, 76, 10)
+	bc.Title = "Population Stats"
+	bc.SetRect(25, 5, 50, 12)
 	bc.Labels = []string{"Min", "Max", "Avg"}
 	bc.BarColors = []ui.Color{ui.ColorYellow, ui.ColorCyan}
 	bc.LabelStyles = []ui.Style{ui.NewStyle(ui.ColorWhite)}
@@ -96,8 +96,8 @@ func CLI() {
 	lc2.Title = "Current Fitness Values"
 	lc2.Data = make([][]float64, 1)
 	lc2.Data[0] = append(lc2.Data[0], 0.0)
-	TotalRunTimes = append(TotalRunTimes, 0, 0, 0)
-	lc2.SetRect(50, 15, 76, 25)
+	TotalRunTimes = append(TotalRunTimes, 0, 0)
+	lc2.SetRect(0, 25, 50, 35)
 	lc2.AxesColor = ui.ColorWhite
 	lc2.LineColors[0] = ui.ColorYellow
 
@@ -111,18 +111,13 @@ func CLI() {
 		if len(Notifications) > 0 {
 			l.Rows = Notifications
 		}
-		slg.Sparklines[0].Data = TotalRunTimes
 		lc.Data[0] = BestOfPops
-		if len(TotalRunTimes) > 0 {
-			if len(TotalRunTimes) > 16 {
-				lc2.Data[0] = TotalRunTimes[len(TotalRunTimes)-15:]
-				slg.Sparklines[0].Data = TotalRunTimes[len(TotalRunTimes)-15:]
-			} else {
-				lc2.Data[0] = TotalRunTimes
-			}
+		lc2.Data[0] = TotalRunTimes
+		if len(TotalRunTimes) > 40 {
+			lc2.Data[0] = TotalRunTimes[len(TotalRunTimes)-40:]
 		}
 		bc.Data = Stats
-		ui.Render(p, l, g, slg, lc, bc, lc2)
+		ui.Render(p, l, g, lc, bc, lc2)
 	}
 
 	tickerCount := 1

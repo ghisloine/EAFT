@@ -11,6 +11,7 @@ import (
 var DataPath = GetPath("data")
 var ResultsPath = GetPath("results")
 var Utilities = filepath.Join(DataPath, "Polybench", "utilities")
+var UtilsFolder = filepath.Join(GetPath("utils"))
 var Files = filepath.Join(DataPath, "Polybench", "datamining")
 var PolybenchC = filepath.Join(Utilities, "polybench.c")
 

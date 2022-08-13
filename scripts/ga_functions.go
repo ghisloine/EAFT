@@ -18,20 +18,25 @@ import (
 	"github.com/MaxHalford/eaopt"
 )
 
-func GARunner() {
+var ProblemName string
+var JsonFile string
+
+func GARunner(problem string) {
 	var ga, err = eaopt.NewDefaultGAConfig().NewGA()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	ProblemName = problem
+	JsonFile = problem + "GA.json"
 
-	f, _ := os.Create(os.Args[3])
+	f, _ := os.Create(JsonFile)
 	defer f.Close()
 	w := bufio.NewWriter(f)
 	fmt.Fprint(w, "")
 	w.Flush()
 
-	f, _ = os.OpenFile(os.Args[3], os.O_APPEND|os.O_WRONLY, 0666)
+	f, _ = os.OpenFile(JsonFile, os.O_APPEND|os.O_WRONLY, 0666)
 	defer f.Close()
 
 	var bytes, _ = json.Marshal(ga)
@@ -43,12 +48,11 @@ func GARunner() {
 	level_two_notification := fmt.Sprintf("O2 : %f", level_two)
 	level_three_notification := fmt.Sprintf("O3 : %f", level_three)
 
-	utils.Notifications = append(utils.Notifications, level_two_notification)
-	utils.Notifications = append(utils.Notifications, level_three_notification)
+	utils.Notifications = append(utils.Notifications, level_two_notification, level_three_notification)
 
-	ga.NGenerations = 50
+	ga.NGenerations = 4
 	ga.ParallelEval = true
-	ga.PopSize = 40
+	ga.PopSize = 5
 	// Add a custom print function to track progress
 	ga.Callback = func(ga *eaopt.GA) {
 		utils.TextBox = fmt.Sprintf("Best fitness at generation %d: ID:  %s, Fitness : %f, Improvement : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness, 1-ga.HallOfFame[0].Fitness/level_two)
@@ -70,6 +74,11 @@ func GARunner() {
 		fmt.Println(err)
 		return
 	}
+	fmt.Printf("O2 Run Time : %f\n", level_two)
+	fmt.Printf("O3 Run Time : %f\n", level_three)
+	fmt.Printf("Best Runtime : %f\n", ga.HallOfFame[0].Fitness)
+	fmt.Println("End of Optimization ..")
+
 }
 
 func MutNormalFloat64(genome []float64, rate float64, rng *rand.Rand) {
@@ -98,7 +107,7 @@ func InitBinaryFloat64(n uint, lower, upper float64, rng *rand.Rand) (floats []f
 func CompileCode(cmd string, id string, count int) (Total float64) {
 	// COMPILE
 	command := strings.Split(cmd, " ")
-	app := os.Args[2]
+	app := "gcc-11"
 	out_compile, err := exec.Command(app, command...).Output()
 	if err != nil {
 		log.Print(string(out_compile))
@@ -109,7 +118,8 @@ func CompileCode(cmd string, id string, count int) (Total float64) {
 	// EXECUTION
 	TotalExecTime := 0.0
 	for i := 0; i < count; i++ {
-		exec_file := filepath.Join(utils.ResultsPath, os.Args[1], "bin", id)
+		// Change There
+		exec_file := filepath.Join(utils.ResultsPath, ProblemName, "bin", id)
 		command_exec := exec.Command(exec_file)
 		var out_exec bytes.Buffer
 		// set the output to our variable

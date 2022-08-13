@@ -11,10 +11,10 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func PSORunner() {
-	var spso, err = eaopt.NewSPSO(10, 10, 0, 1, 0, true, nil)
+func PSORunner(problem string) {
+	var spso, err = eaopt.NewDefaultSPSO()
 
-	f, _ := os.Create(os.Args[3])
+	f, _ := os.Create(problem + ".json")
 	defer f.Close()
 	w := bufio.NewWriter(f)
 	fmt.Fprint(w, "")
@@ -51,12 +51,12 @@ func PSORunner() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(y)
+
 }
 
 func FitnessFunction(X []float64) (y float64) {
 	output := uuid.NewV4().String()
-	cmd, _ := MatchBinaryWithFlags(X, "O2")
+	cmd, _ := MatchBinaryWithFlags(X, "O2", availableFlags)
 
 	// Adding some polybench information to run cmd
 	cmd = addPolybenchDependencies(cmd, os.Args[1], output)

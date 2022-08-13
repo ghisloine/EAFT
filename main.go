@@ -1,13 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"ga_tuner/scripts"
 	"ga_tuner/utils"
-	"os"
 )
 
 func init() {
-	utils.Initialization(os.Args[1])
+
 }
 
 func main() {
@@ -22,11 +22,20 @@ func main() {
 
 	// Set the number of generations to run for
 
-	Runner := os.Args[4]
-	if Runner == "GA" {
-		go scripts.GARunner()
-	} else if Runner == "PSO" {
-		go scripts.PSORunner()
+	// Runner := os.Args[4]
+	// if Runner == "GA" {
+	// 	go scripts.GARunner()
+	// } else if Runner == "PSO" {
+	// 	go scripts.PSORunner()
+	// }
+	// utils.CLI()
+	benchmark_list := []string{"nussinov", "syr2k", "durbin", "seidel-2d", "ludcmp", "adi", "jacobi-1d", "trisolv", "jacobi-2d", "3mm", "symm", "correlation", "floyd-warshall", "gramschmidt", "syrk", "heat-3d", "2mm", "bicg", "fdtd-2d", "deriche", "mvt", "gemm", "doitgen", "covariance", "cholesky", "lu", "gesummv", "trmm", "atax", "gemver"}
+	for _, v := range benchmark_list {
+		fmt.Printf("Starting Problem : %s\n", v)
+		utils.Initialization(v)
+		scripts.PSORunner(v)
 	}
-	utils.CLI()
+
+	// utils.Initialization(os.Args[1])
+	// scripts.GARunner(v)
 }
