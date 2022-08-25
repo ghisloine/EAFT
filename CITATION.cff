@@ -10,4 +10,4 @@ type: software
 authors:
   - given-names: Burak
     family-names: Tagtekin
-  repository-code: 'https://github.com/ghisloine/EAFT'
+repository-code: 'https://github.com/ghisloine/EAFT'
