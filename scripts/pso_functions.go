@@ -12,6 +12,7 @@ import (
 )
 
 func PSORunner() {
+	// TODO CHANGE THIS PART WITH NEW CONFIGURATION
 	var spso, err = eaopt.NewSPSO(10, 10, 0, 1, 0, true, nil)
 
 	f, _ := os.Create(os.Args[3])

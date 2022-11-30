@@ -1,0 +1,13 @@
+Please insert disc 2 and press any key to continue...
+Wake Up, Neo ...
+Nowadays Y2K is just a american singer. In 2000's it has really different meaning.
+In Saudi Arabia, Genetic Algorithm is prohibited. 
+Legends say that, in Soviet Russia, EAFT had really good README.
+Starting bitcoin miner in background...
+Segmentation fault (core dumped)
+Long time no C
+EAFT works best, when pirated.
+22+88=100
+rm: /: Permission denied.
+A wise man never seeks out PSO, but he must always be ready for it. - Allfather EAFT
+Press any key to continue ...

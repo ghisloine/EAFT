@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/MaxHalford/eaopt"
 )
 
 var DataPath = GetPath("data")
@@ -13,6 +15,17 @@ var ResultsPath = GetPath("results")
 var Utilities = filepath.Join(DataPath, "Polybench", "utilities")
 var Files = filepath.Join(DataPath, "Polybench", "datamining")
 var PolybenchC = filepath.Join(Utilities, "polybench.c")
+
+type GeneticObject struct {
+	ObjectType       string
+	ObjectStruct     eaopt.GAConfig
+	ResultFolderName string
+	GccShortcut      string
+}
+
+var MainAlgorithms = []string{"Genetic Algorithm", "Particle Swarm Optimization"}
+var Models = []string{"Steady State", "Generational", "Down to Size", "Ring", "Mutation Only"}
+var Selections = []string{"Tournament", "Roulette", "Elitism"}
 
 func GetDirFiles(dataPath string) []string {
 	files, err := ioutil.ReadDir(dataPath)

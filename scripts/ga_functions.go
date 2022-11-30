@@ -14,16 +14,13 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
 	"github.com/MaxHalford/eaopt"
 )
 
-func GARunner() {
-	var ga, err = eaopt.NewDefaultGAConfig().NewGA()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	JSON_FILE := filepath.Join(utils.ResultsPath, os.Args[1], "log", os.Args[3])
+func GARunner(ga *utils.GeneticObject) {
+
+	JSON_FILE := filepath.Join(utils.ResultsPath, ga.ResultFolderName, "log", ga.ResultFolderName)
 	f, _ := os.Create(JSON_FILE)
 	defer f.Close()
 	w := bufio.NewWriter(f)
@@ -44,12 +41,8 @@ func GARunner() {
 
 	utils.Notifications = append(utils.Notifications, level_two_notification)
 	utils.Notifications = append(utils.Notifications, level_three_notification)
-
-	ga.NGenerations = 50
-	ga.ParallelEval = true
-	ga.PopSize = 40
 	// Add a custom print function to track progress
-	ga.Callback = func(ga *eaopt.GA) {
+	ga.ObjectStruct.Callback = func(ga *eaopt.GA) {
 		utils.TextBox = fmt.Sprintf("Best fitness at generation %d: ID:  %s, Fitness : %f, Improvement : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness, 1-ga.HallOfFame[0].Fitness/level_two)
 		utils.Progress = (float64(ga.Generations+1) / float64(ga.NGenerations)) * float64(100)
 		utils.HallOfFame = ga.HallOfFame[0].Fitness
@@ -64,11 +57,11 @@ func GARunner() {
 	}
 
 	// Find the minimum
-	err = ga.Minimize(VectorFactory)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// err = ga.ObjectStruct.
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 }
 
 func MutNormalFloat64(genome []float64, rate float64, rng *rand.Rand) {
