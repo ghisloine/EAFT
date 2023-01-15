@@ -18,9 +18,9 @@ import (
 	"github.com/MaxHalford/eaopt"
 )
 
-func GARunner(ga *utils.GeneticObject) {
+func GARunner() {
 
-	JSON_FILE := filepath.Join(utils.ResultsPath, ga.ResultFolderName, "log", ga.ResultFolderName)
+	JSON_FILE := filepath.Join(utils.ResultsPath, utils.Pc.ResultFolderName, "log", utils.Pc.ResultFolderName)
 	f, _ := os.Create(JSON_FILE)
 	defer f.Close()
 	w := bufio.NewWriter(f)
@@ -30,7 +30,7 @@ func GARunner(ga *utils.GeneticObject) {
 	f, _ = os.OpenFile(JSON_FILE, os.O_APPEND|os.O_WRONLY, 0666)
 	defer f.Close()
 
-	var bytes, _ = json.Marshal(ga)
+	var bytes, _ = json.Marshal(utils.Pc)
 	f.WriteString(string(bytes) + "\n")
 
 	level_two := CollectBaseline("O2")
@@ -42,7 +42,7 @@ func GARunner(ga *utils.GeneticObject) {
 	utils.Notifications = append(utils.Notifications, level_two_notification)
 	utils.Notifications = append(utils.Notifications, level_three_notification)
 	// Add a custom print function to track progress
-	ga.ObjectStruct.Callback = func(ga *eaopt.GA) {
+	utils.Pc.ObjectStruct.Callback = func(ga *eaopt.GA) {
 		utils.TextBox = fmt.Sprintf("Best fitness at generation %d: ID:  %s, Fitness : %f, Improvement : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness, 1-ga.HallOfFame[0].Fitness/level_two)
 		utils.Progress = (float64(ga.Generations+1) / float64(ga.NGenerations)) * float64(100)
 		utils.HallOfFame = ga.HallOfFame[0].Fitness
@@ -55,13 +55,19 @@ func GARunner(ga *utils.GeneticObject) {
 		}
 		f.WriteString(string(bytes) + "\n")
 	}
+	
+	var geneticAlgorithm, err = utils.Pc.ObjectStruct.NewGA()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	// Find the minimum
-	// err = ga.ObjectStruct.
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
+	err = geneticAlgorithm.Minimize(VectorFactory)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func MutNormalFloat64(genome []float64, rate float64, rng *rand.Rand) {
@@ -90,7 +96,7 @@ func InitBinaryFloat64(n uint, lower, upper float64, rng *rand.Rand) (floats []f
 func CompileCode(cmd string, id string, count int) (Total float64) {
 	// COMPILE
 	command := strings.Split(cmd, " ")
-	app := os.Args[2]
+	app := utils.Pc.GccShortcut
 	out_compile, err := exec.Command(app, command...).Output()
 	if err != nil {
 		log.Print(string(out_compile))

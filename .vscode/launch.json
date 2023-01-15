@@ -11,6 +11,7 @@
         "request": "launch",
         "mode": "auto",
         "program": "main.go",
+        "console": "integratedTerminal",
         "args": ["2mm", "gcc-11", "2mm.json", "GA"]
     },
     {

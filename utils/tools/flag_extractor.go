@@ -2,13 +2,13 @@ package tools
 
 import (
 	"fmt"
-	"os"
+	"ga_tuner/utils"
 	"os/exec"
 	"regexp"
 	"strings"
 )
 
-var Flags []string = ReturnAllFlags(os.Args[2])
+var Flags []string = ReturnAllFlags(utils.Pc.GccShortcut)
 
 func ReturnAllFlags(app string) []string {
 	arg1 := "--help=optimizers"

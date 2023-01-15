@@ -1,6 +1,7 @@
 package main
 
 import (
+	"ga_tuner/scripts"
 	"ga_tuner/utils"
 )
 
@@ -28,13 +29,16 @@ func main() {
 
 	// Example full run -> go run main.go 2mm gcc-11 2mm.json GA
 
-	_ = utils.SelectConfigurations()
-	// fmt.Println(pc)
-	// if pc.ObjectType == "Genetic Algorithm" {
-	// 	go scripts.GARunner()
-	// } else if pc.ObjectType == "Particle Swarm Optimization" {
-	// 	go scripts.PSORunner()
-	// }
+	if utils.Pc.ObjectType == "Genetic Algorithm" {
+		go scripts.GARunner()
+	} else if utils.Pc.ObjectType == "Particle Swarm Optimization" {
+		go scripts.PSORunner()
+	}
 	utils.CLI()
 
 }
+
+// SON KALDIGIM YER
+// TO-DO
+// HofSize has to be strictly higher than 0 -> Bu hatayi aliyorum. Bunu fixle = DONE
+// Olusturdugum yeni degiskeni artik global tanimladim. Her yerden erisim saglayabiliyorum. Tum implementasyonlari onunla degistir.

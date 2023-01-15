@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"log"
 
 	"github.com/MaxHalford/eaopt"
 	"github.com/manifoldco/promptui"
 )
-
+var Pc = SelectConfigurations()
 func selectMainAlgorithm(obj *GeneticObject) {
 
 	prompt := promptui.Select{
@@ -185,10 +186,27 @@ func SelectConfigurations() GeneticObject {
 
 	selectMainAlgorithm(&GenObj)
 	GenObj.ResultFolderName = selectStringResults("What will be the result folder name ?")
-	GenObj.GccShortcut = selectStringResults("How do you call GCC in your CLI ?")
+	GenObj.GccShortcut = "gcc-12"//selectStringResults("How do you call GCC in your CLI ?")
 	GenObj.ObjectStruct.NGenerations = uint(selectIntResults("Please Enter Number of Generation ?", false))
-	GenObj.ObjectStruct.NPops = uint(selectIntResults("Please Enter Population Size?", false))
+	GenObj.ObjectStruct.PopSize = uint(selectIntResults("Please Enter Population Size?", false))
+	GenObj.ObjectStruct.NPops = 1
+	GenObj.ObjectStruct.HofSize = 1
 	GenObj.ObjectStruct.ParallelEval = true
 
+	// GenObj.ObjectStruct = eaopt.GAConfig{
+	// 	NPops:        1,
+	// 	PopSize:      30,
+	// 	HofSize:      1,
+	// 	NGenerations: 50,
+	// 	Model: eaopt.ModGenerational{
+	// 		Selector: eaopt.SelTournament{
+	// 			NContestants: 3,
+	// 		},
+	// 		MutRate:   0.5,
+	// 		CrossRate: 0.7,
+	// 	},
+	// 	ParallelEval: false,
+	// }
+	log.Println(GenObj)
 	return GenObj
 }
