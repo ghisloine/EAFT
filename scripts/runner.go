@@ -4,7 +4,6 @@ import (
 	"ga_tuner/utils"
 	"ga_tuner/utils/tools"
 	"math/rand"
-	"os"
 	"path"
 
 	"github.com/MaxHalford/eaopt"
@@ -36,7 +35,7 @@ func MatchBinaryWithFlags(X Vector, OptLevel string) (string, map[string]int) {
 }
 
 func addPolybenchDependencies(command string, problem string, out_file string) string {
-	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, os.Args[1], "bin", out_file)
+	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, utils.Pc.ResultFolderName, "bin", out_file)
 	return command
 }
 
@@ -47,7 +46,7 @@ func (X Vector) Evaluate() (float64, error) {
 	cmd, _ := MatchBinaryWithFlags(X, "O3")
 
 	// Adding some polybench information to run cmd
-	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
+	cmd = addPolybenchDependencies(cmd, utils.Pc.ResultFolderName, output)
 
 	// Total is Execution time of Code.
 	total := CompileCode(cmd, output, 3)
@@ -57,12 +56,12 @@ func (X Vector) Evaluate() (float64, error) {
 
 // Mutate a Vector by resampling each element from a normal distribution with
 // probability 0.8.
+// TODO Change mutation with dynamic variable.
 
 func (p Vector) Mutate(rng *rand.Rand) {
 	MutNormalFloat64(p, 0.8, rng)
 }
 
-// TODO : Paper'da olup burada olmayan crossover metodlari neler var ona bak.
 // Crossover a Vector with another Vector by applying uniform crossover.
 func (X Vector) Crossover(Y eaopt.Genome, rng *rand.Rand) {
 	eaopt.CrossGNXFloat64(X, Y.(Vector), 2, rng)
@@ -87,7 +86,7 @@ func CollectBaseline(Baseline string) float64 {
 	output := uuid.NewV4().String()
 	cmd, _ := MatchBinaryWithFlags(make([]float64, 0), Baseline)
 	// Adding some polybench information to run cmd
-	cmd = addPolybenchDependencies(cmd, os.Args[1], output)
+	cmd = addPolybenchDependencies(cmd, utils.Pc.ResultFolderName, output)
 
 	// Total is Execution time of Code.
 	total := CompileCode(cmd, output, 1)

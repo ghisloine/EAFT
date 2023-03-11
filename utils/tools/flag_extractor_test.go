@@ -6,7 +6,8 @@ import (
 )
 
 func TestReturnAllFlags(t *testing.T) {
-	flags := ReturnAllFlags("gcc-11")
+	flags := ReturnAllFlags("gcc-12")
+	fmt.Println(flags)
 	actual := len(flags) > 0
 	if actual != true {
 		t.Error("No flags available in this architect.")
@@ -14,3 +15,5 @@ func TestReturnAllFlags(t *testing.T) {
 		fmt.Printf("Total Flags : %d\n", len(flags))
 	}
 }
+
+// TODO PATH PROBLEMI VAR. BI ONU COZ.

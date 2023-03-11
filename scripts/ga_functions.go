@@ -107,7 +107,7 @@ func CompileCode(cmd string, id string, count int) (Total float64) {
 	// EXECUTION
 	TotalExecTime := 0.0
 	for i := 0; i < count; i++ {
-		exec_file := filepath.Join(utils.ResultsPath, os.Args[1], "bin", id)
+		exec_file := filepath.Join(utils.ResultsPath, utils.Pc.ResultFolderName, "bin", id)
 		command_exec := exec.Command(exec_file)
 		var out_exec bytes.Buffer
 		// set the output to our variable

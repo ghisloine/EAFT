@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-
+	utils.Initialization(utils.Pc.ResultFolderName)
 }
 
 func main() {
@@ -39,6 +39,4 @@ func main() {
 }
 
 // SON KALDIGIM YER
-// TO-DO
-// HofSize has to be strictly higher than 0 -> Bu hatayi aliyorum. Bunu fixle = DONE
 // Olusturdugum yeni degiskeni artik global tanimladim. Her yerden erisim saglayabiliyorum. Tum implementasyonlari onunla degistir.
