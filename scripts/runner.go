@@ -34,12 +34,12 @@ func MatchBinaryWithFlags(X Vector, OptLevel string) (string, map[string]int) {
 	return cmd, flag_map
 }
 
-func addPolybenchDependencies(command string, problem string, out_file string) string {
-	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, utils.Pc.ResultFolderName, "bin", out_file)
+func addPolybenchDependencies(command string, problem string, outFile string) string {
+	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, utils.Pc.ResultFolderName, utils.Pc.ExperimentDate, "bin", outFile)
 	return command
 }
 
-// Fitness function burasi
+// Fitness function
 func (X Vector) Evaluate() (float64, error) {
 	// Changing Binary Array to GCC command with corresponding open / close flag
 	output := uuid.NewV4().String()
@@ -56,10 +56,8 @@ func (X Vector) Evaluate() (float64, error) {
 
 // Mutate a Vector by resampling each element from a normal distribution with
 // probability 0.8.
-// TODO Change mutation with dynamic variable.
-
 func (p Vector) Mutate(rng *rand.Rand) {
-	MutNormalFloat64(p, 0.8, rng)
+	MutNormalFloat64(p, utils.Pc.MutationRate, rng)
 }
 
 // Crossover a Vector with another Vector by applying uniform crossover.
@@ -74,11 +72,11 @@ func (X Vector) Clone() eaopt.Genome {
 	return Y
 }
 
-// VectorFactory returns a random vector by generating 2 values uniformally
+// VectorFactory returns a random vector by generating 2 values uniformly
 // distributed between -10 and 10.
 func VectorFactory(rng *rand.Rand) eaopt.Genome {
-	// NUMBER_OF_FLAGS := uint(len(availableFlags))
-	return Vector(InitBinaryFloat64(50, 0, 2, rng))
+	NumberOfFlags := uint(len(availableFlags))
+	return Vector(InitBinaryFloat64(NumberOfFlags, 0, 2, rng))
 
 }
 

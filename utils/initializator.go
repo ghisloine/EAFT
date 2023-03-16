@@ -10,11 +10,11 @@ import (
 
 // TODO : Add UnitTest for this function
 // TODO : Add New Folder between bin and problem : 2mm - 19/02/1992-18:04 - bin log results
-func Initialization(folderName string) {
+func Initialization(folderName string, experimentDate string) {
 	newPath := filepath.Join(ResultsPath, folderName)
 	if _, err := os.Stat(newPath); errors.Is(err, os.ErrNotExist) {
 		err := os.MkdirAll(filepath.Join(newPath, "bin"), os.ModePerm)
-		err = os.MkdirAll(filepath.Join(newPath, "log"), os.ModePerm)
+		err = os.MkdirAll(filepath.Join(newPath, experimentDate), os.ModePerm)
 		err = os.MkdirAll(filepath.Join(newPath, "results"), os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
@@ -24,7 +24,7 @@ func Initialization(folderName string) {
 		fmt.Println("Folder Exist. Would you like to delete and generate again ?")
 		fmt.Println("[1] For Yes, Enter 1")
 		fmt.Println("[2] For No,  Enter 2")
-		var answer = "1"
+		var answer = "2"
 		if answer == "1" {
 			os.RemoveAll(newPath)
 			err := os.MkdirAll(filepath.Join(newPath, "bin"), os.ModePerm)
@@ -40,4 +40,16 @@ func Initialization(folderName string) {
 
 	}
 
+}
+
+func createNewFolder(fullPath string, deleteIfExist bool) {
+	if _, err := os.Stat(fullPath); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(fullPath, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else if deleteIfExist {
+		os.RemoveAll(fullPath)
+		log.Println("File Deleted")
+	}
 }

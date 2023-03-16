@@ -1,9 +1,7 @@
 package scripts
 
 import (
-	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"ga_tuner/utils"
 	"log"
@@ -20,42 +18,22 @@ import (
 
 func GARunner() {
 
-	JSON_FILE := filepath.Join(utils.ResultsPath, utils.Pc.ResultFolderName, "log", utils.Pc.ResultFolderName)
-	f, _ := os.Create(JSON_FILE)
-	defer f.Close()
-	w := bufio.NewWriter(f)
-	fmt.Fprint(w, "")
-	w.Flush()
+	logPath := filepath.Join(utils.ResultsPath, utils.Pc.ResultFolderName, utils.Pc.ExperimentDate)
 
-	f, _ = os.OpenFile(JSON_FILE, os.O_APPEND|os.O_WRONLY, 0666)
-	defer f.Close()
+	levelTwo := calculateBaseline(logPath)
 
-	var bytes, _ = json.Marshal(utils.Pc)
-	f.WriteString(string(bytes) + "\n")
-
-	level_two := CollectBaseline("O2")
-	level_three := CollectBaseline("O3")
-
-	level_two_notification := fmt.Sprintf("O2 : %f", level_two)
-	level_three_notification := fmt.Sprintf("O3 : %f", level_three)
-
-	utils.Notifications = append(utils.Notifications, level_two_notification)
-	utils.Notifications = append(utils.Notifications, level_three_notification)
-	// Add a custom print function to track progress
 	utils.Pc.ObjectStruct.Callback = func(ga *eaopt.GA) {
-		utils.TextBox = fmt.Sprintf("Best fitness at generation %d: ID:  %s, Fitness : %f, Improvement : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness, 1-ga.HallOfFame[0].Fitness/level_two)
+		utils.TextBox = fmt.Sprintf("Best fitness at generation %d: ID:  %s, Fitness : %f, Improvement : %f\n", ga.Generations, ga.HallOfFame[0].ID, ga.HallOfFame[0].Fitness, 1-ga.HallOfFame[0].Fitness/levelTwo)
 		utils.Progress = (float64(ga.Generations+1) / float64(ga.NGenerations)) * float64(100)
 		utils.HallOfFame = ga.HallOfFame[0].Fitness
+		utils.HofList = append(utils.HofList, ga.HallOfFame[0].Fitness)
 		utils.BestOfPops = append(utils.BestOfPops, ga.HallOfFame[0].Fitness)
 		utils.Stats = []float64{math.Floor(ga.HallOfFame.FitMin()*100) / 100, math.Floor(ga.HallOfFame.FitMax()*100) / 100, math.Floor(ga.HallOfFame.FitAvg()*100) / 100}
-		var bytes, err = json.Marshal(ga)
 
-		if err != nil {
-			fmt.Println(err)
-		}
-		f.WriteString(string(bytes) + "\n")
+		utils.AllResults = append(utils.AllResults, *ga)
+		utils.AppendToFile(filepath.Join(logPath, "hof"), fmt.Sprintf("%f", ga.HallOfFame[0].Fitness))
 	}
-	
+
 	var geneticAlgorithm, err = utils.Pc.ObjectStruct.NewGA()
 	if err != nil {
 		fmt.Println(err)
@@ -68,6 +46,9 @@ func GARunner() {
 		fmt.Println(err)
 		return
 	}
+
+	utils.WriteAllResult(utils.AllResults, filepath.Join(logPath, "log"))
+
 }
 
 func MutNormalFloat64(genome []float64, rate float64, rng *rand.Rand) {
@@ -97,23 +78,23 @@ func CompileCode(cmd string, id string, count int) (Total float64) {
 	// COMPILE
 	command := strings.Split(cmd, " ")
 	app := utils.Pc.GccShortcut
-	out_compile, err := exec.Command(app, command...).Output()
+	outCompile, err := exec.Command(app, command...).Output()
+	executeFilePath := filepath.Join(utils.ResultsPath, utils.Pc.ResultFolderName, utils.Pc.ExperimentDate, "bin", id)
 	if err != nil {
-		log.Print(string(out_compile))
-		Total = math.Inf(10)
+		log.Print(string(outCompile))
+		Total = 99999
 		return Total
 	}
 
 	// EXECUTION
 	TotalExecTime := 0.0
 	for i := 0; i < count; i++ {
-		exec_file := filepath.Join(utils.ResultsPath, utils.Pc.ResultFolderName, "bin", id)
-		command_exec := exec.Command(exec_file)
-		var out_exec bytes.Buffer
+		commandExec := exec.Command(executeFilePath)
+		var outExec bytes.Buffer
 		// set the output to our variable
-		command_exec.Stdout = &out_exec
+		commandExec.Stdout = &outExec
 		start := time.Now()
-		err = command_exec.Run()
+		err = commandExec.Run()
 		TotalExecTime += time.Since(start).Seconds()
 		if err != nil {
 			Total = math.Inf(10)
@@ -123,5 +104,27 @@ func CompileCode(cmd string, id string, count int) (Total float64) {
 	// CALC AVERAGE OF TOTAL RUN TIME
 	Total = TotalExecTime / float64(count)
 	utils.TotalRunTimes = append(utils.TotalRunTimes, math.Floor(Total*100)/100)
+	deleteBinaryFile(executeFilePath)
+	utils.Bar.Add(1)
+	return
+}
+
+func deleteBinaryFile(fullPath string) {
+	_ = os.RemoveAll(fullPath)
+}
+
+func calculateBaseline(logPath string) (levelTwo float64) {
+	levelTwo = CollectBaseline("O2")
+	levelThree := CollectBaseline("O3")
+
+	levelTwoNotification := fmt.Sprintf("O2 : %f", levelTwo)
+	levelThreeNotification := fmt.Sprintf("O3 : %f", levelThree)
+
+	utils.Notifications = append(utils.Notifications, levelTwoNotification)
+	utils.Notifications = append(utils.Notifications, levelThreeNotification)
+
+	utils.AppendToFile(filepath.Join(logPath, "hof"), fmt.Sprintf("%f", levelTwo))
+	utils.AppendToFile(filepath.Join(logPath, "hof"), fmt.Sprintf("%f", levelThree))
+
 	return
 }

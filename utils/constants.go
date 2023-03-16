@@ -20,7 +20,21 @@ type GeneticObject struct {
 	ObjectType       string
 	ObjectStruct     eaopt.GAConfig
 	ResultFolderName string
+	ExperimentDate   string
 	GccShortcut      string
+	ModelName        string
+	SelectorName     string
+	MutationRate     float64
+}
+
+type ConfigurationsObject struct {
+	NumberOfPopulation uint
+	PopulationSize     uint
+	NumberOfGeneration uint
+	ModelName          string
+	SelectorName       string
+	MutationRate       float64
+	CrossoverRate      float64
 }
 
 var MainAlgorithms = []string{"Genetic Algorithm", "Particle Swarm Optimization"}

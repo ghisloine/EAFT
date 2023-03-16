@@ -3,14 +3,17 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"os"
-	"strconv"
-	"log"
-
 	"github.com/MaxHalford/eaopt"
 	"github.com/manifoldco/promptui"
+	"github.com/schollz/progressbar/v3"
+	"os"
+	"strconv"
+	"time"
 )
-var Pc = ManuelConfiguration()
+
+var Pc = ManuelConfiguration("2mm", 0.7, 100)
+var Bar = progressbar.New(int(Pc.ObjectStruct.NGenerations * Pc.ObjectStruct.PopSize))
+
 func selectMainAlgorithm(obj *GeneticObject) {
 
 	prompt := promptui.Select{
@@ -182,8 +185,7 @@ func selectIntResults(question string, restriction bool) float64 {
 // TODO Bu fonksiyonun ciktisi her yerden erisilebilir olmali.
 
 func SelectConfigurations() GeneticObject {
-	
-	
+
 	GenObj := GeneticObject{}
 	selectMainAlgorithm(&GenObj)
 	GenObj.ResultFolderName = selectStringResults("What will be the result folder name ?")
@@ -197,28 +199,36 @@ func SelectConfigurations() GeneticObject {
 	return GenObj
 }
 
-func ManuelConfiguration() GeneticObject {
+func ManuelConfiguration(ResultFolderName string, crossoverRate float64, populationSize uint) GeneticObject {
 	GenObj := GeneticObject{}
+	dt := time.Now()
+	experimentDate := dt.Format(time.RFC3339)
 
 	GenObj.ObjectType = "Genetic Algorithm"
-	GenObj.ResultFolderName = "2mm"
+	GenObj.ResultFolderName = ResultFolderName
 	GenObj.GccShortcut = "gcc-12"
+	GenObj.ExperimentDate = experimentDate
+	GenObj.ModelName = "Generational"
+	GenObj.SelectorName = "Tournament"
+	GenObj.MutationRate = 0.1
+	MutationRate := 0.1
+	CrossoverRate := crossoverRate
 
 	GenObj.ObjectStruct = eaopt.GAConfig{
 		NPops:        1,
-		PopSize:      30,
+		PopSize:      populationSize,
 		HofSize:      1,
-		NGenerations: 50,
+		NGenerations: 10,
 		Model: eaopt.ModGenerational{
 			Selector: eaopt.SelTournament{
 				NContestants: 3,
 			},
-			MutRate:   0.5,
-			CrossRate: 0.7,
+			MutRate:   MutationRate,
+			CrossRate: CrossoverRate,
 		},
 		ParallelEval: true,
 	}
 
-	log.Println(GenObj)
+	WriteAlgorithmConfigurations(GenObj, MutationRate, CrossoverRate)
 	return GenObj
 }

@@ -16,11 +16,11 @@ package utils
 // Text Box -> Not sure about it but it could be name of session.
 
 import (
-	"log"
-	"time"
-
+	"github.com/MaxHalford/eaopt"
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+	"log"
+	"time"
 )
 
 var TotalRunTimes []float64
@@ -28,8 +28,10 @@ var Notifications []string
 var TextBox string
 var Progress float64
 var HallOfFame float64
+var HofList []float64
 var Stats []float64
 var BestOfPops []float64
+var AllResults []eaopt.GA
 
 func CLI() {
 	if err := ui.Init(); err != nil {
