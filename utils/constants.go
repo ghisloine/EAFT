@@ -14,6 +14,7 @@ var DataPath = GetPath("data")
 var ResultsPath = GetPath("results")
 var Utilities = filepath.Join(DataPath, "Polybench", "utilities")
 var Files = filepath.Join(DataPath, "Polybench", "datamining")
+var OpentunerFiles = filepath.Join(DataPath, "opentuner")
 var PolybenchC = filepath.Join(Utilities, "polybench.c")
 
 type GeneticObject struct {

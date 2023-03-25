@@ -206,7 +206,7 @@ func ManuelConfiguration(ResultFolderName string, crossoverRate float64, populat
 
 	GenObj.ObjectType = "Genetic Algorithm"
 	GenObj.ResultFolderName = ResultFolderName
-	GenObj.GccShortcut = "gcc-12"
+	GenObj.GccShortcut = "g++-12"
 	GenObj.ExperimentDate = experimentDate
 	GenObj.ModelName = "Generational"
 	GenObj.SelectorName = "Tournament"

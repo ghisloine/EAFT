@@ -35,7 +35,7 @@ func MatchBinaryWithFlags(X Vector, OptLevel string) (string, map[string]int) {
 }
 
 func addPolybenchDependencies(command string, problem string, outFile string) string {
-	command += path.Join(utils.Files, problem) + `.c` + ` -I` + utils.Utilities + ` --include ` + `polybench.c` + ` -o ` + path.Join(utils.ResultsPath, utils.Pc.ResultFolderName, utils.Pc.ExperimentDate, "bin", outFile)
+	command += path.Join(utils.OpentunerFiles, problem) + `.cpp` + ` -o ` + path.Join(utils.ResultsPath, utils.Pc.ResultFolderName, utils.Pc.ExperimentDate, "bin", outFile)
 	return command
 }
 
